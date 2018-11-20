@@ -19,6 +19,8 @@ public class MahjongModule : MonoBehaviour
     public Texture[] TileTextures;
     public Texture[] TileTexturesHighlighted;
     public MeshRenderer CountingTile;
+    public ParticleSystem Smoke1;
+    public ParticleSystem Smoke2;
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
@@ -81,19 +83,71 @@ public class MahjongModule : MonoBehaviour
         var pairIxs = Enumerable.Range(0, 2 * solution.Count).ToArray().Shuffle();
         for (int i = 0; i < solution.Count; i++)
         {
-            _layout.Tiles[solution[i].Ix1].MeshRenderer.material.mainTexture = TileTextures[_matchRow1[pairIxs[i]]];
-            _layout.Tiles[solution[i].Ix2].MeshRenderer.material.mainTexture = TileTextures[_matchRow2[pairIxs[i]]];
+            _layout.Tiles[solution[i].Ix1].SetTextures(TileTextures[_matchRow1[pairIxs[i]]], TileTexturesHighlighted[_matchRow1[pairIxs[i]]]);
+            _layout.Tiles[solution[i].Ix1].PairedWith = solution[i].Ix2;
+
+            _layout.Tiles[solution[i].Ix2].SetTextures(TileTextures[_matchRow2[pairIxs[i]]], TileTexturesHighlighted[_matchRow2[pairIxs[i]]]);
+            _layout.Tiles[solution[i].Ix2].PairedWith = solution[i].Ix1;
+
             Debug.LogFormat(@"[Mahjong #{0}] — {1} and {2}", _moduleId, tileName(_matchRow1[pairIxs[i]]), tileName(_matchRow2[pairIxs[i]]));
         }
 
         for (int i = 0; i < Tiles.Length; i++)
             Tiles[i].OnInteract = clickTile(i);
+        for (int i = _layout.Tiles.Length; i < Tiles.Length; i++)
+            Tiles[i].gameObject.SetActive(false);
     }
 
     private KMSelectable.OnInteractHandler clickTile(int i)
     {
         return delegate
         {
+            if (_selectedTile == i)
+            {
+                Audio.PlaySoundAtTransform("Selection", _layout.Tiles[i].Transform);
+                _layout.Tiles[i].SetNormal();
+                _selectedTile = null;
+            }
+            else if (!_layout.IsTileAvailable(i, _taken))
+            {
+                Module.HandleStrike();
+                Debug.LogFormat(@"[Mahjong #{0}] You received a strike because you selected a tile ({1}) that was not available.", _moduleId, _layout.Tiles[i].Name);
+            }
+            else if (_selectedTile == null)
+            {
+                Audio.PlaySoundAtTransform("Selection", _layout.Tiles[i].Transform);
+                _layout.Tiles[i].SetHighlighted();
+                _selectedTile = i;
+            }
+            else if (i == _layout.Tiles[_selectedTile.Value].PairedWith)
+            {
+                // Valid pair! Eliminate
+                Audio.PlaySoundAtTransform("Elimination", _layout.Tiles[i].Transform);
+                Smoke1.transform.localPosition = _layout.Tiles[i].Transform.localPosition;
+                Smoke1.Play();
+                Smoke2.transform.localPosition = _layout.Tiles[_selectedTile.Value].Transform.localPosition;
+                Smoke2.Play();
+                Debug.LogFormat(@"[Mahjong #{0}] {1} and {2} correctly eliminated.", _moduleId, _layout.Tiles[_selectedTile.Value].Name, _layout.Tiles[i].Name);
+                _layout.Tiles[i].GameObject.SetActive(false);
+                _layout.Tiles[_selectedTile.Value].GameObject.SetActive(false);
+                _taken[i] = true;
+                _taken[_selectedTile.Value] = true;
+                _selectedTile = null;
+
+                if (_taken.All(t => t))
+                {
+                    Debug.LogFormat(@"[Mahjong #{0}] Module passed.", _moduleId);
+                    Module.HandlePass();
+                }
+            }
+            else
+            {
+                // Invalid pair. Strike.
+                Debug.LogFormat(@"[Mahjong #{0}] {1} and {2} are not a valid pair. Strike.", _moduleId, _layout.Tiles[_selectedTile.Value].Name, _layout.Tiles[i].Name);
+                Module.HandleStrike();
+                _layout.Tiles[_selectedTile.Value].SetNormal();
+                _selectedTile = null;
+            }
             return false;
         };
     }
