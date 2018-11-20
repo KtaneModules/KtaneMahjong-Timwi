@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using KModkit;
 using Mahjong;
 using UnityEngine;
@@ -72,15 +73,48 @@ public class MahjongModule : MonoBehaviour
         Debug.LogFormat(@"[Mahjong #{0}] Counting tile is {1} ⇒ shift is {2} to the right", _moduleId, tileName(_countingRow[offset]), offset);
 
         // Decide on a layout
-        var layoutRaw = @"///.1.1..1.1.1/..2....242/.1.1..1.1.1";
+        var layouts = new[]
+        {
+            @"/.1.1/..2/.141..1.1.1/..2....242/.1.1..1.1.1",
+            @"/..1.1/...2.2/..1.5.4/...2...2/....4.5.1/.....2.2/......1.1",
+            @"//.....3/.1.1...1.1/..2.252.2/.1.1...1.1/.....3",
+            @"/.1212121//.3.....3//.1212121",
+            @"....1.1//....1.1/..2.2.2.2/....1.1/..2.2.2.2/....1.1//....1.1",
+            @"/..1.1/.1.2.2/..1.1/...2..1/....12.2/......1.1/......2.2/........1.1",
+            @"/.....121/...12...21//..3.3//...12...21/.....121",
+            @"//.121212121//....121//....121//....121",
+            @"....3//...3.3//..3...3...3//.......3.3//........3",
+            @"/...1.1.1/.1...2...1/.....1/.1.1...1.1/.....1/.1...2...1/...1.1.1",
+            @"///1.1.1.1.1.1/.2.2.6.2.2/1.1.1.1.1.1",
+            @"///.7.4.4.4.7//.7.4.4.4.7",
+            @"//...7.5.7//...4...4//...7.5.7",
+            @"/1/2.1/1.2.1/..1.2.1/....1.2.1/......1.2.1/........1.2/..........1",
+            @"/.3.3//.3.3/....4.4/.......3.3//.......3.3",
+            @"..1/....1/1.1/...2/.1..4R4..1/.......2/........1.1/......1/........1",
+            @".1.1/.2.2/1.5.1/.2.2/.1.1.3/.......2/......1.1/..........1",
+            @"///...7.7.7//...7.7.7",
+            @"/1/..1.1.1.1/1.........1/..1.1.1.1/1.........1/..1.1.1.1/00........1",
+            @"/.1.1.1.1/..2.2.2/..14141/...2.2/...1.1/....2/....1",
+            @"....1//......12/........1/3.3.3.3.2.1/........1/......12//00..1",
+            @"...1.1.1//...1.1.1/.1/...1.3.1/.........1/...1.1.1//00.1.1.1",
+            @".....1/.....2/....141/....2.2/...14.41/....2.2/....141/00...2/00...1",
+            @"//.....1/...12421/ 124...421/...12421/.....1",
+            @"//...1.1.1/..2.2.2.2/...5.4.1/..2.2.2.2/...1.1.1"
+        };
+        var layoutRaw = layouts[Rnd.Range(0, layouts.Length)];
+        //var layoutRaw = layouts.Last();
 
         // Find out which locations have a tile. Also place the tiles’ actual game objects in the right places (we’ll assign their textures later).
         _layout = LayoutInfo.Create(layoutRaw, _moduleId, Tiles);
+        Debug.LogFormat(@"<Mahjong #{0}> Chosen layout has {1} tiles.", _moduleId, _layout.Tiles.Length);
+        for (int i = _layout.Tiles.Length; i < Tiles.Length; i++)
+            Tiles[i].gameObject.SetActive(false);
+
         var solution = _layout.FindSolutionPath(_moduleId);
         _taken = new bool[_layout.Tiles.Length];
 
-        Debug.LogFormat(@"[Mahjong #{0}] Solution:", _moduleId);
-        var pairIxs = Enumerable.Range(0, 2 * solution.Count).ToArray().Shuffle();
+        Debug.LogFormat(@"[Mahjong #{0}] Possible solution:", _moduleId);
+        var pairIxs = Enumerable.Range(0, solution.Count).ToArray().Shuffle();
         for (int i = 0; i < solution.Count; i++)
         {
             _layout.Tiles[solution[i].Ix1].SetTextures(TileTextures[_matchRow1[pairIxs[i]]], TileTexturesHighlighted[_matchRow1[pairIxs[i]]]);
@@ -94,8 +128,6 @@ public class MahjongModule : MonoBehaviour
 
         for (int i = 0; i < Tiles.Length; i++)
             Tiles[i].OnInteract = clickTile(i);
-        for (int i = _layout.Tiles.Length; i < Tiles.Length; i++)
-            Tiles[i].gameObject.SetActive(false);
     }
 
     private KMSelectable.OnInteractHandler clickTile(int i)
