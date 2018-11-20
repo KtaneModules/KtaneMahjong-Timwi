@@ -70,6 +70,7 @@ public class MahjongModule : MonoBehaviour
         var offset = Rnd.Range(0, 14);
         CountingTile.material.mainTexture = TileTextures[_countingRow[offset]];
         Debug.LogFormat(@"[Mahjong #{0}] Counting tile is {1} ⇒ shift is {2} to the right", _moduleId, tileName(_countingRow[offset]), offset);
+        _matchRow2 = _matchRow2.Skip(14 - offset).Concat(_matchRow2.Take(14 - offset)).ToArray();
 
         // Decide on a layout
         var layouts = new[]
