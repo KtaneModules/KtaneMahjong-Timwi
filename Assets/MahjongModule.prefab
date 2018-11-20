@@ -470,6 +470,7 @@ GameObject:
   - component: {fileID: 4166231878733300}
   - component: {fileID: 198394811436894232}
   - component: {fileID: 199521181291624954}
+  - component: {fileID: 114911925726977384}
   m_Layer: 0
   m_Name: Smoke2
   m_TagString: Untagged
@@ -941,6 +942,7 @@ GameObject:
   - component: {fileID: 4076104177035026}
   - component: {fileID: 198485650044689888}
   - component: {fileID: 199348112169891340}
+  - component: {fileID: 114425555480753250}
   m_Layer: 0
   m_Name: Smoke1
   m_TagString: Untagged
@@ -1563,7 +1565,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1007803662122174}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.07, y: 0.015, z: 0.065}
+  m_LocalPosition: {x: -0.066, y: 0.015, z: 0.065}
   m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_Children:
   - {fileID: 4162544304644156}
@@ -1647,7 +1649,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1216325215264090}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.165}
+  m_LocalPosition: {x: -0.006, y: 0, z: -0.165}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_Children: []
   m_Father: {fileID: 4094016926863570}
@@ -4218,6 +4220,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/Diffuse
+--- !u!114 &114425555480753250
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1350810143733950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Particles/Additive (Soft)
 --- !u!114 &114429246091551420
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4959,6 +4974,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - KT/Mobile/Diffuse
+--- !u!114 &114911925726977384
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1015354376884568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Particles/Additive (Soft)
 --- !u!114 &114919805288734014
 MonoBehaviour:
   m_ObjectHideFlags: 1
