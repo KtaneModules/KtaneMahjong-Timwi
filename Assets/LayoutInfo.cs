@@ -39,7 +39,8 @@ namespace Mahjong
             for (int y = 0; y < layoutRows.Length; y++)
                 for (int x = 0; x < layoutRows[y].Length; x++)
                 {
-                    var bits = layoutRows[y][x] == '.' ? 0 : int.Parse(layoutRows[y][x].ToString(), NumberStyles.HexNumber);
+                    var ch = layoutRows[y][x];
+                    var bits = ch == '.' ? 0 : ch >= '0' && ch <= '9' ? ch - '0' : ch - 'A' + 10;
                     for (int b = 0; bits > 0; b++)
                         if ((bits & (1 << b)) != 0)
                         {
@@ -59,14 +60,15 @@ namespace Mahjong
 
         public List<TilePair> FindSolutionPath(int moduleId)
         {
-            var solution = findSolutionPath(new bool[Tiles.Length]);
+            var already = new HashSet<string>();
+            var solution = findSolutionPath(new bool[Tiles.Length], already);
             if (solution == null)
                 Debug.LogFormat(@"[Mahjong #{0}] Please report this bug to Timwi: Layout has no possible solution.", moduleId);
             solution.Reverse();
             return solution;
         }
 
-        private List<TilePair> findSolutionPath(bool[] taken)
+        private List<TilePair> findSolutionPath(bool[] taken, HashSet<string> already)
         {
             if (taken.All(t => t))
                 return new List<TilePair>();
@@ -80,7 +82,10 @@ namespace Mahjong
                     var newTaken = taken.ToArray();
                     newTaken[permissibleTileIxs[i]] = true;
                     newTaken[permissibleTileIxs[j]] = true;
-                    var sol = findSolutionPath(newTaken);
+                    var key = newTaken.Select(b => b ? "1" : "0").JoinString();
+                    if (!already.Add(key))
+                        continue;
+                    var sol = findSolutionPath(newTaken, already);
                     if (sol != null)
                     {
                         sol.Add(new TilePair(permissibleTileIxs[i], permissibleTileIxs[j]));
