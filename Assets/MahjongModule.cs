@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using KModkit;
 using Mahjong;
 using UnityEngine;
@@ -43,6 +46,12 @@ public class MahjongModule : MonoBehaviour
         return TileTextures[ix].name.Replace(" normal", "");
     }
 
+    string tileShortName(int ix)
+    {
+        var name = tileName(ix);
+        return name.Contains(' ') ? name.Where(ch => (ch < 'a' || ch > 'z') && ch != ' ').JoinString() : name.Substring(0, 2);
+    }
+
     void Start()
     {
         _moduleId = _moduleIdCounter++;
@@ -67,10 +76,18 @@ public class MahjongModule : MonoBehaviour
             _matchRow2[sn[2 * i + 1]] = t;
         }
 
+        Debug.LogFormat(@"[Mahjong #{0}] After swaps, match rows are:", _moduleId);
+        Debug.LogFormat(@"[Mahjong #{0}] Row 1: {1}", _moduleId, _matchRow1.Select(tileShortName).JoinString(" "));
+        Debug.LogFormat(@"[Mahjong #{0}] Row 2: {1}", _moduleId, _matchRow2.Select(tileShortName).JoinString(" "));
+
         var offset = Rnd.Range(0, 14);
         CountingTile.material.mainTexture = TileTextures[_countingRow[offset]];
         Debug.LogFormat(@"[Mahjong #{0}] Counting tile is {1} ⇒ shift is {2} to the right", _moduleId, tileName(_countingRow[offset]), offset);
         _matchRow2 = _matchRow2.Skip(14 - offset).Concat(_matchRow2.Take(14 - offset)).ToArray();
+
+        Debug.LogFormat(@"[Mahjong #{0}] After shift, match rows are:", _moduleId);
+        Debug.LogFormat(@"[Mahjong #{0}] Row 1: {1}", _moduleId, _matchRow1.Select(tileShortName).JoinString(" "));
+        Debug.LogFormat(@"[Mahjong #{0}] Row 2: {1}", _moduleId, _matchRow2.Select(tileShortName).JoinString(" "));
 
         // Decide on a layout
         var layouts = new[]
@@ -182,5 +199,43 @@ public class MahjongModule : MonoBehaviour
             }
             return false;
         };
+    }
+
+#pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} W1,B7,C4,RD,O,N [Wheel 1, Bamboo 7, Character 4, Red Dragon, Orchid, North] | Gotta write out “South”/“Summer”/“Spring” and “West”/“Winter” in full if more than one of those tiles is present on the module.";
+#pragma warning restore 414
+
+    public IEnumerator ProcessTwitchCommand(string command)
+    {
+        var pieces = command.ToLowerInvariant().Split(new[] { ',', ';', '+' });
+        var list = new List<KMSelectable>();
+        foreach (var piece in pieces)
+        {
+            var pieceName = piece.Trim();
+            var matches = Enumerable.Range(0, _layout.Tiles.Length)
+                .Where(i => !_taken[i] && (
+                    _layout.Tiles[i].Name.Equals(pieceName, StringComparison.InvariantCultureIgnoreCase) ||
+                    _layout.Tiles[i].ShortName.Equals(pieceName, StringComparison.InvariantCultureIgnoreCase)))
+                .ToArray();
+            if (matches.Length > 1)
+            {
+                yield return string.Format("sendtochaterror The name “{0}” matches multiple tiles: {1}", pieceName, matches.Select(ix => _layout.Tiles[ix].Name).JoinString(", "));
+                yield break;
+            }
+            if (matches.Length == 0)
+            {
+                yield return string.Format("sendtochaterror The name “{0}” does not match any tile.", pieceName);
+                yield break;
+            }
+            list.Add(_layout.Tiles[matches[0]].KMSelectable);
+        }
+        yield return null;
+        var even = false;
+        foreach (var elem in list)
+        {
+            yield return new[] { elem };
+            yield return new WaitForSeconds(even ? .5f : .2f);
+            even = !even;
+        }
     }
 }
