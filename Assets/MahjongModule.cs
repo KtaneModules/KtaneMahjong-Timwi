@@ -58,6 +58,8 @@ public class MahjongModule : MonoBehaviour
         _moduleId = _moduleIdCounter++;
 
         var rnd = RuleSeedable.GetRNG();
+        Debug.LogFormat("[Mahjong #{0}] Using rule seed: {1}", _moduleId, rnd.Seed);
+
         var skip = rnd.Next(0, 100);
         for (var i = 0; i < skip; i++)
             rnd.NextDouble();
