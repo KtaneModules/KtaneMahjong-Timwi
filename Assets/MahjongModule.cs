@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using KModkit;
 using Mahjong;
 using UnityEngine;
@@ -202,11 +203,47 @@ public class MahjongModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} W1,B7,C4,RD,O,N [Wheel 1, Bamboo 7, Character 4, Red Dragon, Orchid, North] | Gotta write out “South”/“Summer”/“Spring” and “West”/“Winter” in full if more than one of those tiles is present on the module.";
+    private readonly string TwitchHelpMessage = @"!{0} tilt | !{0} W1,B7,C4,RD,O,N [Wheel 1, Bamboo 7, Character 4, Red Dragon, Orchid, North] | Gotta write out “South”/“Summer”/“Spring” and “West”/“Winter” in full if more than one of those tiles is present on the module.";
 #pragma warning restore 414
 
+    private float easeCubic(float t) { return 3 * t * t - 2 * t * t * t; }
+    private float interp(float t, float from, float to) { return t * (to - from) + from; }
     public IEnumerator ProcessTwitchCommand(string command)
     {
+        if (Regex.IsMatch(command, @"^\s*tilt\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            var frontFace = transform.parent.parent.localEulerAngles.z < 45 || transform.parent.parent.localEulerAngles.z > 315;
+
+            var angle = -60f;
+            var targetAngle = frontFace ? -angle : angle;
+
+            var duration = 1.2f;
+            var elapsed = 0f;
+            while (elapsed < duration)
+            {
+                var lerp = Quaternion.Euler(interp(easeCubic(elapsed / duration), 0, targetAngle), 0, 0);
+                yield return new Quaternion[] { lerp, lerp };
+                yield return null;
+                elapsed += Time.deltaTime;
+            }
+            yield return new Quaternion[] { Quaternion.Euler(targetAngle, 0, 0), Quaternion.Euler(targetAngle, 0, 0) };
+
+            yield return new WaitForSeconds(2.5f);
+
+            elapsed = 0f;
+            while (elapsed < duration)
+            {
+                var lerp = Quaternion.Euler(interp(easeCubic(elapsed / duration), targetAngle, 0), 0, 0);
+                yield return new Quaternion[] { lerp, lerp };
+                yield return null;
+                elapsed += Time.deltaTime;
+            }
+            yield return new Quaternion[] { Quaternion.identity, Quaternion.identity };
+            yield return null;
+            yield break;
+        }
+
         var pieces = command.ToLowerInvariant().Split(new[] { ',', ';', '+' });
         var list = new List<KMSelectable>();
         foreach (var piece in pieces)
