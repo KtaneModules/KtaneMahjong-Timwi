@@ -13,6 +13,7 @@
     <style>
         .tile {
             display: inline-block;
+            position: relative;
         }
         .tile > img {
             width: 1.1cm;
@@ -36,9 +37,22 @@
         li {
             margin: .15cm 0;
         }
+        span.indicate {
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translate(-50%, 2px);
+        }
     </style>
     <script>
         var _tiles = "Bamboo 2,Plum,Green Dragon,Spring,Bamboo 3,Winter,Bamboo,Bamboo 4,Bamboo 5,Bamboo 6,Bamboo 7,Bamboo 8,Summer,Bamboo 9,Bamboo 1,Char 1,Char 2,Orchid,Fall,Char 3,West,Char 4,Char 5,Char 6,Char 7,Char 8,Char 9,Wheel 1,Wheel 2,Wheel 3,Chrysanthemum,Wheel 4,Wheel 5,Wheel 6,Wheel 7,Wheel 8,Wheel 9,East,South,Red Dragon,White Dragon,North".split(',');
+
+        function abbrev(name)
+        {
+            if (m = /^(\w)\w+ (\w|\d)\w*$/.exec(name))
+                return m[1]+m[2];
+            return name.substr(0, 2);
+        }
 
         function setDefaultRules(rnd) { setRules(rnd); }
         function setRules(rnd)
@@ -54,6 +68,7 @@
             for (var i = 0; i < 42; i++)
             {
                 elems[i].firstChild.setAttribute('src', `img/Mahjong/${tiles[i]}.png`);
+                elems[i].firstChild.setAttribute('alt', abbrev(tiles[i]));
                 elems[i].setAttribute('title', `${tiles[i]}`);
             }
         }
@@ -81,17 +96,17 @@
 
             <p class="caption">Match Rows</p>
             <div class="row">
-                <span class="tile highlightable" title="Char 1"><img src="img/Mahjong/Char 1.png"></span>
+                <span class="tile highlightable" title="Char 1"><img src="img/Mahjong/Char 1.png"><span class='indicate'>0</span></span>
                 <span class="tile highlightable" title="Bamboo 5"><img src="img/Mahjong/Bamboo 5.png"></span>
                 <span class="tile highlightable" title="Wheel 5"><img src="img/Mahjong/Wheel 5.png"></span>
                 <span class="tile highlightable" title="Bamboo 8"><img src="img/Mahjong/Bamboo 8.png"></span>
                 <span class="tile highlightable" title="Bamboo 2"><img src="img/Mahjong/Bamboo 2.png"></span>
-                <span class="tile highlightable" title="Char 9"><img src="img/Mahjong/Char 9.png"></span>
+                <span class="tile highlightable" title="Char 9"><img src="img/Mahjong/Char 9.png"><span class='indicate'>5</span></span>
                 <span class="tile highlightable" title="Red Dragon"><img src="img/Mahjong/Red Dragon.png"></span>
                 <span class="tile highlightable" title="Bamboo 6"><img src="img/Mahjong/Bamboo 6.png"></span>
                 <span class="tile highlightable" title="Bamboo 4"><img src="img/Mahjong/Bamboo 4.png"></span>
                 <span class="tile highlightable" title="Wheel 4"><img src="img/Mahjong/Wheel 4.png"></span>
-                <span class="tile highlightable" title="Char 6"><img src="img/Mahjong/Char 6.png"></span>
+                <span class="tile highlightable" title="Char 6"><img src="img/Mahjong/Char 6.png"><span class='indicate'>10</span></span>
                 <span class="tile highlightable" title="Char 2"><img src="img/Mahjong/Char 2.png"></span>
                 <span class="tile highlightable" title="Wheel 2"><img src="img/Mahjong/Wheel 2.png"></span>
                 <span class="tile highlightable" title="Char 3"><img src="img/Mahjong/Char 3.png"></span>
@@ -120,17 +135,17 @@
 
             <p class="caption">Counting Row</p>
             <div class="row">
-                <span class="tile highlightable" title="Bamboo 1"><img src="img/Mahjong/Bamboo 1.png"></span>
+                <span class="tile highlightable" title="Bamboo 1"><img src="img/Mahjong/Bamboo 1.png"><span class='indicate'>0</span></span>
                 <span class="tile highlightable" title="Plum"><img src="img/Mahjong/Plum.png"></span>
                 <span class="tile highlightable" title="Orchid"><img src="img/Mahjong/Orchid.png"></span>
                 <span class="tile highlightable" title="Chrysanthemum"><img src="img/Mahjong/Chrysanthemum.png"></span>
                 <span class="tile highlightable" title="Bamboo"><img src="img/Mahjong/Bamboo.png"></span>
-                <span class="tile highlightable" title="Spring"><img src="img/Mahjong/Spring.png"></span>
+                <span class="tile highlightable" title="Spring"><img src="img/Mahjong/Spring.png"><span class='indicate'>5</span></span>
                 <span class="tile highlightable" title="Summer"><img src="img/Mahjong/Summer.png"></span>
                 <span class="tile highlightable" title="Fall"><img src="img/Mahjong/Fall.png"></span>
                 <span class="tile highlightable" title="Winter"><img src="img/Mahjong/Winter.png"></span>
                 <span class="tile highlightable" title="North"><img src="img/Mahjong/North.png"></span>
-                <span class="tile highlightable" title="East"><img src="img/Mahjong/East.png"></span>
+                <span class="tile highlightable" title="East"><img src="img/Mahjong/East.png"><span class='indicate'>10</span></span>
                 <span class="tile highlightable" title="South"><img src="img/Mahjong/South.png"></span>
                 <span class="tile highlightable" title="West"><img src="img/Mahjong/West.png"></span>
                 <span class="tile highlightable" title="Green Dragon"><img src="img/Mahjong/Green Dragon.png"></span>
