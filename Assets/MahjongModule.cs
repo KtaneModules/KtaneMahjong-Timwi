@@ -36,12 +36,6 @@ public class MahjongModule : MonoBehaviour
     private bool[] _taken;
     private int? _selectedTile;
 
-    //[UnityEditor.MenuItem("A/B")]
-    //public static void Menu()
-    //{
-    //    var m = FindObjectOfType<MahjongModule>();
-    //}
-
     string tileName(int ix)
     {
         return TileTextures[ix].name.Replace(" normal", "");
@@ -122,7 +116,6 @@ public class MahjongModule : MonoBehaviour
             @"//...1.1.1/..2.2.2.2/...5.4.1/..2.2.2.2/...1.1.1"
         };
         var layoutRaw = layouts[Rnd.Range(0, layouts.Length)];
-        //var layoutRaw = layouts.Last();
 
         // Find out which locations have a tile. Also place the tiles’ actual game objects in the right places (we’ll assign their textures later).
         _layout = LayoutInfo.Create(layoutRaw, _moduleId, Tiles);
@@ -162,8 +155,8 @@ public class MahjongModule : MonoBehaviour
             }
             else if (!_layout.IsTileAvailable(i, _taken))
             {
-                Module.HandleStrike();
                 Debug.LogFormat(@"[Mahjong #{0}] You received a strike because you selected a tile ({1}) that was not available.", _moduleId, _layout.Tiles[i].Name);
+                Module.HandleStrike();
             }
             else if (_selectedTile == null)
             {
@@ -205,47 +198,11 @@ public class MahjongModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} tilt | !{0} W1,B7,C4,RD,O,N [Wheel 1, Bamboo 7, Character 4, Red Dragon, Orchid, North] | Gotta write out “South”/“Summer”/“Spring” and “West”/“Winter” in full if more than one of those tiles is present on the module.";
+    private readonly string TwitchHelpMessage = @"!{0} W1,B7,C4,RD,O,N [Wheel 1, Bamboo 7, Character 4, Red Dragon, Orchid, North] | Gotta write out “South”/“Summer”/“Spring” and “West”/“Winter” in full if more than one of those tiles is present on the module.";
 #pragma warning restore 414
 
-    private float easeCubic(float t) { return 3 * t * t - 2 * t * t * t; }
-    private float interp(float t, float from, float to) { return t * (to - from) + from; }
     public IEnumerator ProcessTwitchCommand(string command)
     {
-        if (Regex.IsMatch(command, @"^\s*tilt\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
-        {
-            yield return null;
-            var frontFace = transform.parent.parent.localEulerAngles.z < 45 || transform.parent.parent.localEulerAngles.z > 315;
-
-            var angle = -60f;
-            var targetAngle = frontFace ? -angle : angle;
-
-            var duration = 1.2f;
-            var elapsed = 0f;
-            while (elapsed < duration)
-            {
-                var lerp = Quaternion.Euler(interp(easeCubic(elapsed / duration), 0, targetAngle), 0, 0);
-                yield return new Quaternion[] { lerp, lerp };
-                yield return null;
-                elapsed += Time.deltaTime;
-            }
-            yield return new Quaternion[] { Quaternion.Euler(targetAngle, 0, 0), Quaternion.Euler(targetAngle, 0, 0) };
-
-            yield return new WaitForSeconds(2.5f);
-
-            elapsed = 0f;
-            while (elapsed < duration)
-            {
-                var lerp = Quaternion.Euler(interp(easeCubic(elapsed / duration), targetAngle, 0), 0, 0);
-                yield return new Quaternion[] { lerp, lerp };
-                yield return null;
-                elapsed += Time.deltaTime;
-            }
-            yield return new Quaternion[] { Quaternion.identity, Quaternion.identity };
-            yield return null;
-            yield break;
-        }
-
         var pieces = command.ToLowerInvariant().Split(new[] { ',', ';', '+' });
         var list = new List<KMSelectable>();
         foreach (var piece in pieces)
