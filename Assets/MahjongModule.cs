@@ -234,4 +234,31 @@ public class MahjongModule : MonoBehaviour
             even = !even;
         }
     }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        if (_selectedTile != null)
+        {
+            Tiles[_selectedTile.Value].OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+
+        while (!_taken.All(t => t))
+        {
+            // Find a valid pair to eliminate
+            for (var i = 0; i < _layout.Tiles.Length; i++)
+            {
+                if (!_taken[i] && _layout.IsTileAvailable(i, _taken) && _layout.IsTileAvailable(_layout.Tiles[i].PairedWith, _taken))
+                {
+                    Tiles[i].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                    Tiles[_layout.Tiles[i].PairedWith].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                    while (Smoke1.isPlaying || Smoke2.isPlaying)
+                        yield return true;
+                    break;
+                }
+            }
+        }
+    }
 }
